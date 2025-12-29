@@ -7,8 +7,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 # Enhanced CORS to allow connections from your React dev server
-CORS(app, resources={r"/api/*": {
-    "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+CORS(app, resources={r"/*": {
+    "origins": [
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "https://my-flask-backend-3ehc.onrender.com",
+        "https://*.vercel.app"  # This allows any Vercel subdomain
+    ],
     "methods": ["GET", "POST", "DELETE", "OPTIONS"],
     "allow_headers": ["Content-Type", "Authorization"]
 }})
@@ -160,7 +165,4 @@ def get_summary(user_id):
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=5000, host='0.0.0.0')
-
-if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')    
+    app.run(debug=False, host='0.0.0.0')  
