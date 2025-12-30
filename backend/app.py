@@ -11,7 +11,7 @@ CORS(app, resources={r"/*": {
     "origins": [
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "https://my-flask-backend-3ehc.onrender.com",
+        "http://vehicle-maintenance-tracker-kop8-cbhxghzzx.vercel.app",
         "https://*.vercel.app"  # This allows any Vercel subdomain
     ],
     "methods": ["GET", "POST", "DELETE", "OPTIONS"],
@@ -59,7 +59,7 @@ def safe_float(val, default=0.0):
         return float(clean_val)
     except: return default
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     data = request.json or {}
     conn = sqlite3.connect(DB_NAME)
@@ -71,7 +71,7 @@ def login():
         return jsonify({"user": {"id": user[0], "username": user[1]}})
     return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route('/api/register', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register():
     data = request.json or {}
     try:
@@ -85,7 +85,7 @@ def register():
     finally:
         conn.close()
 
-@app.route('/api/vehicles', methods=['GET', 'POST'])
+@app.route('/vehicles', methods=['GET', 'POST'])
 def handle_vehicles():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -103,7 +103,7 @@ def handle_vehicles():
         conn.close()
         return jsonify([{"id": r[0], "make": r[2], "model": r[3], "year": r[4], "license_plate": r[5], "current_mileage": r[6]} for r in rows])
 
-@app.route('/api/vehicles/<int:v_id>', methods=['DELETE'])
+@app.route('/vehicles/<int:v_id>', methods=['DELETE'])
 def delete_vehicle(v_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -113,7 +113,7 @@ def delete_vehicle(v_id):
     conn.close()
     return jsonify({"msg": "Deleted"})
 
-@app.route('/api/records', methods=['GET', 'POST'])
+@app.route('/records', methods=['GET', 'POST'])
 def handle_records():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -142,7 +142,7 @@ def handle_records():
         conn.close()
         return jsonify([{"id": r[0], "date": r[2], "task": r[3], "cost": r[4], "mileage": r[5], "v_hash": r[7]} for r in rows])
 
-@app.route('/api/records/<int:r_id>', methods=['DELETE'])
+@app.route('/records/<int:r_id>', methods=['DELETE'])
 def delete_record(r_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -151,7 +151,7 @@ def delete_record(r_id):
     conn.close()
     return jsonify({"msg": "Deleted"})
 
-@app.route('/api/summary/<int:user_id>', methods=['GET'])
+@app.route('/summary/<int:user_id>', methods=['GET'])
 def get_summary(user_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
