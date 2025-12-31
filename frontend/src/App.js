@@ -32,7 +32,7 @@ const App = () => {
   const [vForm, setVForm] = useState({ make: '', model: '', year: '', license_plate: '', current_mileage: '' });
   const [rForm, setRForm] = useState({ date: new Date().toISOString().split('T')[0], task: '', cost: '', mileage: '', verification_hash: '' });
 
-  const API_BASE = "http://127.0.0.1:5000/api";
+  const API_BASE = "https://my-flask-backend-3ehc.onrender.com";
   const apiKey = "AIzaSyBSw00TIh5566uPhPRJHzlxndmLy95NLxs";
 
   const request = async (method, path, body = null) => {
