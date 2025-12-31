@@ -11,10 +11,11 @@ CORS(app, resources={r"/*": {
     "origins": [
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "http://vehicle-maintenance-tracker-kop8-cbhxghzzx.vercel.app",
-        "https://*.vercel.app"  # This allows any Vercel subdomain
+        "https://my-flask-backend-3ehc.onrender.com",
+        "https://vehicle-maintenance-tracker-self.vercel.app",  # Your actual Vercel URL
+        "https://*.vercel.app"
     ],
-    "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "allow_headers": ["Content-Type", "Authorization"]
 }})
 
