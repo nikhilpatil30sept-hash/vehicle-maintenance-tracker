@@ -1,64 +1,37 @@
-CarKeeper AI: Vehicle Maintenance Tracker & QA Showcase
+CarKeeper AI: Vehicle Maintenance Tracker
 
-A full-stack application designed to track vehicle service history, developed with a focus on Data Integrity and Automated Quality Assurance.
+A full-stack application developed to help vehicle owners manage service records and track maintenance history. This project demonstrates proficiency in Full-Stack Architecture, SQL Database Design, and AI API Integration.
 
-🚀 Project Architecture
+🚀 Key Features
 
-Frontend: React.js (Tailwind CSS) - Located in /frontend
+AI Receipt Processing: Integration with the Google Gemini API to automatically extract service dates, costs, and tasks from uploaded maintenance receipts.
 
-Backend: Python Flask (REST API) - Located in /backend
+Relational Data Management: A robust backend system to handle multi-user accounts, vehicle profiles, and service logs.
 
-Database: SQL (SQLite)
+Dynamic Dashboard: A responsive React interface featuring real-time maintenance summaries and cost tracking.
 
-Automation Testing: Cypress (End-to-End UI Testing)
+🛠 Technical Stack
 
-🧪 Quality Assurance & Testing (ISTQB Aligned)
+Frontend: React.js, Tailwind CSS (Responsive UI/UX design)
 
-This project serves as a technical showcase for modern QA methodologies:
+Backend: Python Flask (RESTful API Development)
 
-E2E Automation: A comprehensive suite using Cypress to validate critical user journeys:
+Database: SQL (SQLite) with custom schema migration logic
 
-User Registration & Authentication flow.
+Deployment: Successfully deployed using Vercel (Frontend) and Render (Backend)
 
-Vehicle CRUD operations (Create, Read, Update, Delete).
+📁 Project Structure
 
-Responsive UI validation.
+/frontend: React source code, including state management for maintenance records and vehicle data.
 
-Data Validation: Robust backend error handling and data type safety to ensure database integrity.
+/backend: Flask API routes, SQLite database initialization, and logic for AI-powered OCR extraction.
 
-SQL Best Practices: Implementation of a relational schema with foreign key constraints.
+⚙️ Technical Highlights
 
-🛠 Setup & Installation
+Data Integrity: Implemented backend validation (safe_int, safe_float) to ensure data accuracy across the SQLite database.
 
-Backend
+RESTful Design: Developed a clean API architecture supporting full CRUD (Create, Read, Update, Delete) operations for vehicles and maintenance logs.
 
-Navigate to /backend
+Scalability: Built with a modular approach, allowing for easy expansion of features like mileage reminders or multi-vehicle comparison.
 
-Create a virtual environment: python -m venv venv
-
-Install dependencies: pip install -r requirements.txt
-
-Run the server: python app.py
-
-Frontend
-
-Navigate to /frontend
-
-Install dependencies: npm install
-
-Start the app: npm start
-
-🚦 Running Automated Tests
-
-To run the E2E test suite:
-
-Ensure both Frontend and Backend are running.
-
-In the /frontend directory, run:
-
-npx cypress open
-
-
-Select carkeeper_test.cy.js from the Cypress interface.
-
-Developed as a showcase of technical growth in Automation and Quality Engineering.
+This project serves as a comprehensive showcase of technical development skills and full-stack integration.
