@@ -28,18 +28,19 @@ const App = () => {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
   
-  const [authData, setAuthData] = useState({ username: '', password: '' });
+  const [authData, setAuthData] = useState({ email: '', password: '' });
   const [vForm, setVForm] = useState({ make: '', model: '', year: '', license_plate: '', current_mileage: '' });
   const [rForm, setRForm] = useState({ date: new Date().toISOString().split('T')[0], task: '', cost: '', mileage: '', verification_hash: '' });
 
-  const API_BASE = "https://my-flask-backend-3ehc.onrender.com";
-  const apiKey = "AIzaSyBSw00TIh5566uPhPRJHzlxndmLy95NLxs";
+  const API_BASE = process.env.REACT_APP_API_BASE || "https://my-flask-backend-3ehc.onrender.com";
 
   const request = async (method, path, body = null) => {
     const xhr = new XMLHttpRequest();
     return new Promise((resolve, reject) => {
       xhr.open(method, `${API_BASE}${path}`);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      const token = localStorage.getItem('carkeeper_token');
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       xhr.onload = () => {
         let res = {};
         try { res = JSON.parse(xhr.responseText || "{}"); } catch(e) {}
@@ -79,37 +80,19 @@ Rules:
 
     const fetchWithRetry = async (retries = 0) => {
       try {
-        if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
-          throw new Error("API key not configured. Please add your Gemini API key to the code.");
-        }
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: systemPrompt },
-                { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } }
-              ]
-            }],
-            generationConfig: { 
-              temperature: 0.1
-            }
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          if (retries < 3) {
-            const delay = Math.pow(2, retries) * 1000;
-            await new Promise(r => setTimeout(r, delay));
-            return fetchWithRetry(retries + 1);
+        const payload = {
+          contents: [{
+            parts: [
+              { text: systemPrompt },
+              { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1
           }
-          throw new Error(errorData.error?.message || "API request failed");
-        }
+        };
 
-        const result = await response.json();
+        const result = await request('POST', '/api/ocr', { payload });
         let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) throw new Error("No text returned from AI");
         
@@ -130,7 +113,7 @@ Rules:
         }
       } catch (err) {
         if (retries >= 3) {
-          setError(`AI Analysis failed: ${err.message}. Please enter manually.`);
+          setError(`AI Analysis failed: ${err.message || err}. Please enter manually.`);
         } else {
           const delay = Math.pow(2, retries) * 1000;
           await new Promise(r => setTimeout(r, delay));
@@ -173,19 +156,21 @@ Rules:
   const fetchData = async () => {
     if (!user) return;
     try {
-      const v = await request('GET', `/vehicles?user_id=${user.id}`);
+      const v = await request('GET', `/vehicles`);
       setVehicles(v);
-      const s = await request('GET', `/summary/${user.id}`);
+      const s = await request('GET', `/summary`);
       setSummary(s);
     } catch (e) { setError(e.toString()); }
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('carkeeper_user');
-    if (saved) { 
-        setUser(JSON.parse(saved)); 
-        setView('dashboard'); 
+    const savedUser = localStorage.getItem('carkeeper_user');
+    const savedToken = localStorage.getItem('carkeeper_token');
+    if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser));
+        setView('dashboard');
     } else {
+        localStorage.clear();
         setView('login');
     }
   }, []);
@@ -270,34 +255,22 @@ Rules:
             <p className="text-white/80 text-sm">Track your vehicle maintenance with ease</p>
           </div>
           
-          <div className="space-y-4" onSubmit={async (e) => {
-            e.preventDefault();
-            try {
-              const res = await request('POST', view === 'login' ? '/login' : '/register', authData);
-              if(view === 'login') {
-                setUser(res.user);
-                localStorage.setItem('carkeeper_user', JSON.stringify(res.user));
-                setView('dashboard');
-              } else {
-                setView('login');
-                setError("Account created! Please login.");
-              }
-            } catch (e) { setError(e.toString()); }
-          }}>
-            <input 
-              className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:bg-white/30 focus:border-cyan-400 transition-all" 
-              placeholder="Username" 
-              onChange={e=>setAuthData({...authData, username: e.target.value})} 
-              required 
+          <div className="space-y-4">
+            <input
+              className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:bg-white/30 focus:border-cyan-400 transition-all"
+              type="email"
+              placeholder="Email"
+              onChange={e=>setAuthData({...authData, email: e.target.value})}
+              required
             />
-            <input 
-              className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:bg-white/30 focus:border-cyan-400 transition-all" 
-              type="password" 
-              placeholder="Password" 
-              onChange={e=>setAuthData({...authData, password: e.target.value})} 
-              required 
+            <input
+              className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 outline-none focus:bg-white/30 focus:border-cyan-400 transition-all"
+              type="password"
+              placeholder="Password (min. 8 characters)"
+              onChange={e=>setAuthData({...authData, password: e.target.value})}
+              required
             />
-            <button 
+            <button
               onClick={async (e) => {
                 e.preventDefault();
                 try {
@@ -305,6 +278,7 @@ Rules:
                   if(view === 'login') {
                     setUser(res.user);
                     localStorage.setItem('carkeeper_user', JSON.stringify(res.user));
+                    localStorage.setItem('carkeeper_token', res.token);
                     setView('dashboard');
                   } else {
                     setView('login');
@@ -377,7 +351,7 @@ Rules:
               <div className="space-y-3" onSubmit={async (e) => {
                 e.preventDefault();
                 try {
-                  await request('POST', '/vehicles', {...vForm, user_id: user.id});
+                  await request('POST', '/vehicles', vForm);
                   setVForm({ make: '', model: '', year: '', license_plate: '', current_mileage: '' });
                   fetchData();
                 } catch (e) { setError("Failed to add vehicle"); }
@@ -395,7 +369,7 @@ Rules:
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
-                      await request('POST', '/vehicles', {...vForm, user_id: user.id});
+                      await request('POST', '/vehicles', vForm);
                       setVForm({ make: '', model: '', year: '', license_plate: '', current_mileage: '' });
                       fetchData();
                     } catch (e) { setError("Failed to add vehicle"); }

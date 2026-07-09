@@ -8,14 +8,15 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
     # Relationship to Vehicle (One User can have Many Vehicles)
-    vehicles = db.relationship('Vehicle', backref='owner', lazy=True)
+    vehicles = db.relationship('Vehicle', backref='owner', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User {self.email}>'
 
 # Model for a Vehicle
 class Vehicle(db.Model):
@@ -25,23 +26,26 @@ class Vehicle(db.Model):
     make = db.Column(db.String(80), nullable=False)
     model = db.Column(db.String(80), nullable=False)
     year = db.Column(db.Integer, nullable=False)
-    vin = db.Column(db.String(17), unique=True, nullable=True) # VIN is optional
+    license_plate = db.Column(db.String(20), nullable=True)
+    current_mileage = db.Column(db.Integer, nullable=False, default=0)
 
-    # Relationship to MaintenanceRecord (One Vehicle can have Many Records)
-    maintenance_records = db.relationship('MaintenanceRecord', backref='vehicle', lazy=True)
+    # Relationship to Record (One Vehicle can have Many maintenance Records)
+    records = db.relationship('Record', backref='vehicle', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Vehicle {self.year} {self.make} {self.model}>'
 
 # Model for a Maintenance Record (Service History)
-class MaintenanceRecord(db.Model):
-    __tablename__ = 'maintenance_records'
+class Record(db.Model):
+    __tablename__ = 'records'
     id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
-    service_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    mileage = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(500), nullable=False)
-    cost = db.Column(db.Float, nullable=True) # Service cost
+    date = db.Column(db.String(20), nullable=False)
+    task = db.Column(db.String(500), nullable=False)
+    cost = db.Column(db.Float, nullable=True)
+    mileage = db.Column(db.Integer, nullable=False, default=0)
+    category = db.Column(db.String(80), nullable=True, default='General')
+    verification_hash = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
-        return f'<MaintenanceRecord {self.description} on {self.service_date}>'
+        return f'<Record {self.task} on {self.date}>'
