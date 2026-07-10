@@ -6,15 +6,6 @@ import {
 } from 'lucide-react';
 
 const App = () => {
-  useEffect(() => {
-    if (!document.getElementById('tailwind-cdn')) {
-      const script = document.createElement('script');
-      script.id = 'tailwind-cdn';
-      script.src = 'https://cdn.tailwindcss.com';
-      document.head.appendChild(script);
-    }
-  }, []);
-
   const [user, setUser] = useState(null);
   const [view, setView] = useState('loading');
   const [vehicles, setVehicles] = useState([]);
