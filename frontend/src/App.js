@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Car, Wrench, LogOut, LayoutDashboard, 
-  ShieldCheck, Activity, Trash2, AlertTriangle, Calendar, 
+import {
+  Car, Wrench, LogOut, LayoutDashboard,
+  Activity, Trash2, AlertTriangle, Calendar,
   Loader2, CheckCircle2, Upload, Edit2, X, Save
 } from 'lucide-react';
 
@@ -175,6 +175,7 @@ Rules:
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (user) fetchData(); }, [user]);
 
   const handleSelect = async (v) => {
