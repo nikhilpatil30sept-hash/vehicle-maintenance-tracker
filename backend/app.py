@@ -36,6 +36,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 JWT_ALGORITHM = 'HS256'
@@ -281,6 +283,5 @@ def ocr_receipt():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=False, host='0.0.0.0')
+    # Local dev default avoids port 5000, which macOS AirPlay Receiver occupies by default.
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))
