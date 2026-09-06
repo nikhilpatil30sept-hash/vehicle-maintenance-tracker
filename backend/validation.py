@@ -77,7 +77,7 @@ def require_int(data, field, minimum, maximum, required=True, default=None):
         cleaned = str(value).replace(',', '').replace('$', '').strip()
         parsed = int(float(cleaned))
     except (TypeError, ValueError):
-        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field)
+        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field) from None
 
     if parsed < minimum or parsed > maximum:
         raise ValidationError(
@@ -99,7 +99,7 @@ def require_float(data, field, minimum, maximum, required=True, default=None):
         cleaned = str(value).replace(',', '').replace('$', '').strip()
         parsed = float(cleaned)
     except (TypeError, ValueError):
-        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field)
+        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field) from None
 
     if parsed != parsed or parsed in (float('inf'), float('-inf')):  # NaN / inf
         raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field)
@@ -127,7 +127,7 @@ def require_date(data, field, required=True, default=None):
         try:
             parsed = datetime.strptime(str(value).strip(), "%Y-%m-%d").date()
         except (TypeError, ValueError):
-            raise ValidationError("Date must be in YYYY-MM-DD format", field)
+            raise ValidationError("Date must be in YYYY-MM-DD format", field) from None
 
     # A service record dated in the future is almost always a typo.
     if parsed > date.today():
@@ -148,7 +148,7 @@ def require_id(value, field="id"):
     try:
         parsed = int(str(value).strip())
     except (TypeError, ValueError):
-        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field)
+        raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a number", field) from None
     if parsed < 1:
         raise ValidationError(f"{field.replace('_', ' ').capitalize()} must be a positive number", field)
     return parsed

@@ -9,16 +9,28 @@ from threading import Lock
 import jwt
 import requests
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, g
+from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from models.models import db, User, Vehicle, Record
+from models.models import Record, User, Vehicle, db
 from validation import (
-    ValidationError, require_string, require_int, require_float, require_date, require_id,
-    MAX_MAKE, MAX_MODEL, MAX_PLATE, MAX_TASK, MAX_CATEGORY,
-    MIN_YEAR, MAX_YEAR, MAX_MILEAGE, MAX_COST,
+    MAX_CATEGORY,
+    MAX_COST,
+    MAX_MAKE,
+    MAX_MILEAGE,
+    MAX_MODEL,
+    MAX_PLATE,
+    MAX_TASK,
+    MAX_YEAR,
+    MIN_YEAR,
+    ValidationError,
+    require_date,
+    require_float,
+    require_id,
+    require_int,
+    require_string,
 )
 
 load_dotenv()

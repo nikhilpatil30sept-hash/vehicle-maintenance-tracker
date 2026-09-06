@@ -23,3 +23,13 @@ Run a single file or test while iterating:
 `tests/test_ocr.py` mocks the Gemini HTTP call - no real `GEMINI_API_KEY` or
 network access is needed to run the suite, and no receipt image or API quota
 is ever touched by a test.
+
+## Linting
+
+    venv/bin/ruff check .          # report issues
+    venv/bin/ruff check . --fix    # auto-fix what's safe to fix (import order, etc.)
+
+Rule selection and line length live in `pyproject.toml` - a deliberately
+curated set rather than Ruff's own defaults, so upgrading Ruff later can't
+silently make CI stricter. This is a separate, required CI check (`Backend
+lint (Ruff)`) from the pytest suite above.

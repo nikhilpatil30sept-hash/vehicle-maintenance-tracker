@@ -69,7 +69,13 @@ def test_partial_update_only_touches_provided_fields(client, register_and_login)
     headers, _ = register_and_login()
     created = client.post(
         "/vehicles",
-        json={"make": "Honda", "model": "Civic", "year": 2020, "license_plate": "ABC123", "current_mileage": 100},
+        json={
+            "make": "Honda",
+            "model": "Civic",
+            "year": 2020,
+            "license_plate": "ABC123",
+            "current_mileage": 100,
+        },
         headers=headers,
     ).get_json()
 
@@ -85,7 +91,13 @@ def test_deleting_vehicle_cascades_to_its_records(client, register_and_login):
     vehicle = client.post("/vehicles", json=VEHICLE, headers=headers).get_json()
     client.post(
         "/records",
-        json={"vehicle_id": vehicle["id"], "date": "2024-01-01", "task": "Oil change", "cost": 50, "mileage": 500},
+        json={
+            "vehicle_id": vehicle["id"],
+            "date": "2024-01-01",
+            "task": "Oil change",
+            "cost": 50,
+            "mileage": 500,
+        },
         headers=headers,
     )
 

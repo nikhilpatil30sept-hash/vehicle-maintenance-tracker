@@ -5,7 +5,7 @@ every case, so no real GEMINI_API_KEY or network access is required, and
 nothing here can burn API quota or leak real receipt images anywhere.
 """
 import base64
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import requests as requests_lib
 
@@ -44,7 +44,11 @@ def test_returns_extracted_text_and_a_fingerprint(client, register_and_login):
     headers, _ = register_and_login()
     with patch("app.requests.post") as mock_post:
         mock_post.return_value = _fake_gemini_response('{"date":"2024-01-01","items":[]}')
-        resp = client.post("/api/ocr", json={"image": _image_b64(), "mime_type": "image/jpeg"}, headers=headers)
+        resp = client.post(
+            "/api/ocr",
+            json={"image": _image_b64(), "mime_type": "image/jpeg"},
+            headers=headers,
+        )
 
     assert resp.status_code == 200
     body = resp.get_json()
@@ -57,8 +61,12 @@ def test_fingerprint_is_stable_for_the_same_image(client, register_and_login):
     image = _image_b64()
     with patch("app.requests.post") as mock_post:
         mock_post.return_value = _fake_gemini_response("{}")
-        first = client.post("/api/ocr", json={"image": image, "mime_type": "image/jpeg"}, headers=headers).get_json()
-        second = client.post("/api/ocr", json={"image": image, "mime_type": "image/jpeg"}, headers=headers).get_json()
+        first = client.post(
+            "/api/ocr", json={"image": image, "mime_type": "image/jpeg"}, headers=headers
+        ).get_json()
+        second = client.post(
+            "/api/ocr", json={"image": image, "mime_type": "image/jpeg"}, headers=headers
+        ).get_json()
 
     assert first["receipt_fingerprint"] == second["receipt_fingerprint"]
 
@@ -66,7 +74,11 @@ def test_fingerprint_is_stable_for_the_same_image(client, register_and_login):
 def test_returns_502_on_upstream_failure(client, register_and_login):
     headers, _ = register_and_login()
     with patch("app.requests.post", side_effect=requests_lib.RequestException("boom")):
-        resp = client.post("/api/ocr", json={"image": _image_b64(), "mime_type": "image/jpeg"}, headers=headers)
+        resp = client.post(
+            "/api/ocr",
+            json={"image": _image_b64(), "mime_type": "image/jpeg"},
+            headers=headers,
+        )
     assert resp.status_code == 502
 
 
@@ -74,7 +86,11 @@ def test_returns_422_when_gemini_returns_no_text(client, register_and_login):
     headers, _ = register_and_login()
     with patch("app.requests.post") as mock_post:
         mock_post.return_value = _fake_gemini_response("")
-        resp = client.post("/api/ocr", json={"image": _image_b64(), "mime_type": "image/jpeg"}, headers=headers)
+        resp = client.post(
+            "/api/ocr",
+            json={"image": _image_b64(), "mime_type": "image/jpeg"},
+            headers=headers,
+        )
     assert resp.status_code == 422
 
 

@@ -1,0 +1,22 @@
+[tool.ruff]
+# The codebase already runs a bit past PEP8's 79/88; 110 catches genuinely
+# long lines without demanding a reflow of otherwise-fine code (the longest
+# line today is 99 chars at the default 88-char limit, which flags ~100
+# lines that aren't actually a readability problem).
+line-length = 110
+extend-exclude = ["venv", "migrations"]
+
+[tool.ruff.lint]
+# A deliberately curated set rather than Ruff's own defaults (which pull in
+# much more opinionated categories, e.g. timezone-awareness rules on every
+# datetime.today() call). Pinning this list explicitly also means adding a
+# new Ruff version later won't silently make CI stricter.
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # import sorting (isort)
+    "UP",  # pyupgrade
+    "B",   # bugbear - common bug-shaped patterns
+    "C4",  # comprehension simplifications
+    "SIM", # general simplifications
+]

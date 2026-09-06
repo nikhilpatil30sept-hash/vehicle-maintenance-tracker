@@ -9,7 +9,11 @@ import pytest
 
 from validation import (
     ValidationError,
-    require_string, require_int, require_float, require_date, require_id,
+    require_date,
+    require_float,
+    require_id,
+    require_int,
+    require_string,
 )
 
 

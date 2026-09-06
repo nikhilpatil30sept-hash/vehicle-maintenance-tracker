@@ -43,6 +43,31 @@ jobs:
         working-directory: backend
         run: pytest
 
+  backend-lint:
+    name: Backend lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      # Rule selection lives in backend/pyproject.toml - a deliberately
+      # curated set rather than Ruff's own (much broader) defaults, so a
+      # future Ruff version can't silently make this stricter.
+      - name: Run Ruff
+        working-directory: backend
+        run: ruff check .
+
   frontend-unit-tests:
     name: Frontend unit tests (Jest)
     runs-on: ubuntu-latest
