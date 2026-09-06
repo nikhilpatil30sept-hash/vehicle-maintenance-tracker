@@ -36,11 +36,13 @@ test.describe('Authentication', () => {
     expect(typeMismatch).toBe(true);
   });
 
-  // The password field carries minLength, but a React controlled input
-  // resets the "dirty value" flag when it writes .value back, and
-  // `tooShort` only applies to user-dirtied values - so the browser does not
-  // actually block a short password here. The server is the real
-  // enforcement; this checks both halves.
+  // The password field carries minLength=8, and a real Playwright `fill()`
+  // does mark the value as user-dirtied, so a too-short password never
+  // leaves the browser - the native `tooShort` validity check blocks the
+  // submit event before React's handler ever runs. That's the client half.
+  // For the server half, this uses a password that clears the client-side
+  // bar but still gets rejected server-side, to check the rejection text
+  // actually renders (independent of whatever the client would allow).
   test('advertises the minimum password length and surfaces the server rejection', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByPlaceholder(/Password/)).toHaveAttribute('minlength', '8');
@@ -55,7 +57,7 @@ test.describe('Authentication', () => {
 
     await page.getByRole('button', { name: /Need an account/ }).click();
     await page.getByPlaceholder('Email').fill('user@example.com');
-    await page.getByPlaceholder(/Password/).fill('short');
+    await page.getByPlaceholder(/Password/).fill('password1');
     await page.getByRole('button', { name: 'Create Account' }).click();
 
     await expect(page.getByText('Password must be at least 8 characters')).toBeVisible();

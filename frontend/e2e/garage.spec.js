@@ -12,7 +12,7 @@ test.describe('Garage', () => {
     await expect(page.getByText('2020 Honda Civic')).toBeVisible();
     await expect(page.getByText('ABC123')).toBeVisible();
     await expect(page.getByText('50,000 miles')).toBeVisible();
-    await expect(page.getByText('$89.99')).toBeVisible();
+    await expect(page.getByText('$89.99', { exact: true })).toBeVisible();
   });
 
   test('requires make, model, year and mileage before adding a vehicle', async ({ page }) => {
@@ -103,7 +103,7 @@ test.describe('Garage', () => {
 
     const card = page.locator('[role="button"]').filter({ hasText: '2020 Honda Civic' });
     await card.hover();
-    await page.getByRole('button', { name: /Delete Honda Civic/ }).click();
+    await page.getByRole('button', { name: 'Delete Honda Civic', exact: true }).click();
 
     expect(deleteCalled).toBe(false);
   });
