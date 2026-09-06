@@ -10,3 +10,11 @@ env/
 *.db
 instance/
 .claude/settings.local.json
+# Cypress run artifacts
+cypress/screenshots/
+cypress/videos/
+
+# Python test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

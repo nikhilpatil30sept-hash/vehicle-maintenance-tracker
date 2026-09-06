@@ -1,0 +1,14 @@
+{
+  "name": "carkeeper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CarKeeper AI - vehicle maintenance tracker. Root-level scripts for running the full stack.",
+  "scripts": {
+    "dev": "./dev.sh",
+    "start": "./dev.sh",
+    "test:frontend": "cd frontend && CI=true npx react-scripts test --watchAll=false",
+    "test:e2e": "cd frontend && npm run cy:run",
+    "test:e2e:open": "cd frontend && npm run cy:open",
+    "build": "cd frontend && npm run build"
+  }
+}

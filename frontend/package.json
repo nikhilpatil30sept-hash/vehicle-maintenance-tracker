@@ -17,7 +17,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "cy:run": "env -u ELECTRON_RUN_AS_NODE cypress run",
+    "cy:open": "env -u ELECTRON_RUN_AS_NODE cypress open"
   },
   "eslintConfig": {
     "extends": [

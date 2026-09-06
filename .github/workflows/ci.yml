@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A new commit on the same branch/PR supersedes any run already in progress
+# for it, so CI minutes aren't spent finishing a test of code nobody wants
+# results for anymore.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    name: Backend tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      # tests/conftest.py points the app at a throwaway SQLite file and sets
+      # its own SECRET_KEY/GEMINI_API_KEY before app.py is ever imported, so
+      # this needs no real database, no secrets, and no network access.
+      # See backend/README.md.
+      - name: Run pytest
+        working-directory: backend
+        run: pytest
+
+  frontend-unit-tests:
+    name: Frontend unit tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Jest
+        working-directory: frontend
+        run: npx react-scripts test --watchAll=false --coverage
+        env:
+          CI: true
+
+  frontend-build:
+    name: Frontend production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # CRA (react-scripts) treats ESLint warnings as build-breaking errors
+      # whenever CI=true, which GitHub Actions sets on every runner by
+      # default. This job exists specifically to catch that class of failure
+      # here instead of on the next Vercel deploy - see commit 53da69a for
+      # the incident this is guarding against.
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: true
+
+  e2e-tests:
+    name: End-to-end tests (Cypress)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Every spec under cypress/e2e stubs its network calls with
+      # cy.intercept (see carkeeper_test.cy.js), so this job never talks to
+      # a real backend or database - only the React dev server needs to be
+      # running. REACT_APP_API_BASE just has to match the URL those specs
+      # intercept (they default to http://localhost:5001).
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: frontend
+          start: npm start
+          wait-on: "http://localhost:3000"
+          browser: chrome
+        env:
+          REACT_APP_API_BASE: http://localhost:5001

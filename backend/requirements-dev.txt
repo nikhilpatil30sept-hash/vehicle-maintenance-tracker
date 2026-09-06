@@ -1,0 +1,7 @@
+# Test-only dependencies. Installed on top of requirements.txt:
+#   venv/bin/pip install -r requirements.txt -r requirements-dev.txt
+-r requirements.txt
+
+pytest
+pytest-cov
+freezegun
