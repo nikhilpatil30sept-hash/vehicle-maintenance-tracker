@@ -153,3 +153,90 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 14
+
+  load-test:
+    name: Load test (k6)
+    runs-on: ubuntu-latest
+    # Informational only - deliberately NOT a required branch-protection
+    # check. Performance thresholds are noisier than correctness tests and a
+    # shared runner's performance varies run to run, so failing a merge over
+    # it would cause false alarms. See backend/loadtest/README.md.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: carkeeper
+          POSTGRES_PASSWORD: carkeeper
+          POSTGRES_DB: carkeeper_loadtest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U carkeeper"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      # Real Postgres, not the SQLite the pytest suite uses - write-path
+      # concurrency behaves very differently under SQLite's file locking, and
+      # Postgres is what the app actually runs on in production.
+      - name: Start mock Gemini server
+        working-directory: backend
+        run: |
+          python loadtest/mock_gemini_server.py &
+          for i in $(seq 1 20); do
+            curl -sf -X POST http://127.0.0.1:8090/ -o /dev/null && break
+            sleep 0.5
+          done
+
+      - name: Prepare database schema
+        # app.py runs db.create_all() at import time. gunicorn's workers all
+        # import it at roughly the same moment, which races two workers into
+        # creating the same table simultaneously and crashes one of them
+        # ("table already exists") - caught locally before this ever reached
+        # CI. Importing once, single-process, first means every table exists
+        # before any worker boots, so each worker's own create_all() is a
+        # no-op check instead of a race.
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://carkeeper:carkeeper@localhost:5432/carkeeper_loadtest
+          SECRET_KEY: loadtest-secret-key
+          GEMINI_API_KEY: loadtest-fake-key
+          GEMINI_API_BASE: http://127.0.0.1:8090
+          FLASK_ENV: production
+        run: python -c "import app"
+
+      - name: Start backend (gunicorn)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://carkeeper:carkeeper@localhost:5432/carkeeper_loadtest
+          SECRET_KEY: loadtest-secret-key
+          GEMINI_API_KEY: loadtest-fake-key
+          GEMINI_API_BASE: http://127.0.0.1:8090
+          FLASK_ENV: production
+        run: |
+          gunicorn -w 4 -b 0.0.0.0:5001 app:app &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:5001/health -o /dev/null && break
+            sleep 1
+          done
+
+      - name: Run k6 load test
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: backend/loadtest/script.js
+        env:
+          BASE_URL: http://127.0.0.1:5001

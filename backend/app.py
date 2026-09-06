@@ -82,6 +82,9 @@ with app.app_context():
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 GEMINI_MODEL = 'gemini-2.5-flash'
+# Overridable so the k6 load test (backend/loadtest/) can point this at a
+# local mock instead of spending real API quota / network calls in CI.
+GEMINI_API_BASE = os.environ.get('GEMINI_API_BASE', 'https://generativelanguage.googleapis.com')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRY = timedelta(days=7)
 MIN_PASSWORD_LENGTH = 8
@@ -456,7 +459,7 @@ def ocr_receipt():
 
     try:
         resp = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
+            f"{GEMINI_API_BASE}/v1beta/models/{GEMINI_MODEL}:generateContent",
             headers={"x-goog-api-key": GEMINI_API_KEY},
             json=payload,
             timeout=30,
