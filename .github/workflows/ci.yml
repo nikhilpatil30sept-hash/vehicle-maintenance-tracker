@@ -93,7 +93,7 @@ jobs:
           CI: true
 
   e2e-tests:
-    name: End-to-end tests (Cypress)
+    name: End-to-end tests (Playwright)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -104,17 +104,27 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # Every spec under cypress/e2e stubs its network calls with
-      # cy.intercept (see carkeeper_test.cy.js), so this job never talks to
-      # a real backend or database - only the React dev server needs to be
-      # running. REACT_APP_API_BASE just has to match the URL those specs
-      # intercept (they default to http://localhost:5001).
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      # Every spec under e2e/ stubs its network calls with page.route (see
+      # e2e/helpers.js), so this job never talks to a real backend or
+      # database. playwright.config.js's webServer block boots the React dev
+      # server itself and waits for it - no separate start/wait-on step
+      # needed.
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
-          working-directory: frontend
-          start: npm start
-          wait-on: "http://localhost:3000"
-          browser: chrome
-        env:
-          REACT_APP_API_BASE: http://localhost:5001
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14

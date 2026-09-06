@@ -7,8 +7,8 @@
     "dev": "./dev.sh",
     "start": "./dev.sh",
     "test:frontend": "cd frontend && CI=true npx react-scripts test --watchAll=false",
-    "test:e2e": "cd frontend && npm run cy:run",
-    "test:e2e:open": "cd frontend && npm run cy:open",
-    "build": "cd frontend && npm run build"
+    "test:e2e": "cd frontend && npm run test:e2e",
+    "build": "cd frontend && npm run build",
+    "test:e2e:ui": "cd frontend && npm run test:e2e:ui"
   }
 }
