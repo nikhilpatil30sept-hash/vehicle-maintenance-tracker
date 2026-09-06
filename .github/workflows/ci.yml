@@ -234,9 +234,18 @@ jobs:
             sleep 1
           done
 
+      # grafana/k6-action runs k6 inside its own Docker container, where
+      # 127.0.0.1 refers to that container - not the runner host gunicorn is
+      # actually listening on. Installing the k6 binary directly and running
+      # it as a normal step avoids that entirely (confirmed working this way
+      # in a local dry run before this was ever pushed).
+      - name: Install k6
+        run: |
+          curl -sL https://github.com/grafana/k6/releases/download/v0.54.0/k6-v0.54.0-linux-amd64.tar.gz | tar xz
+          echo "$PWD/k6-v0.54.0-linux-amd64" >> $GITHUB_PATH
+
       - name: Run k6 load test
-        uses: grafana/k6-action@v0.3.1
-        with:
-          filename: backend/loadtest/script.js
+        working-directory: backend
         env:
           BASE_URL: http://127.0.0.1:5001
+        run: k6 run loadtest/script.js
