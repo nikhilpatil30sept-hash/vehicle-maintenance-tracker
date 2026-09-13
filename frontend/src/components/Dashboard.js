@@ -48,7 +48,7 @@ const Dashboard = ({
     <main className="flex-1 ml-56 p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">My Garage</h2>
+          <h1 className="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">My Garage</h1>
           <p className="text-sm text-slate-500 font-semibold mt-1">
             {summary.vehicle_count} vehicles • ${money(summary.total_cost)} total spent
           </p>

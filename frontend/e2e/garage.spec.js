@@ -101,7 +101,12 @@ test.describe('Garage', () => {
     });
     page.once('dialog', (dialog) => dialog.dismiss()); // decline
 
-    const card = page.locator('[role="button"]').filter({ hasText: '2020 Honda Civic' });
+    // Hovering the card (not the specific select button inside it) is what
+    // reveals the Edit/Delete buttons via CSS group-hover - the whole card
+    // carries the `group` class, and the select control is only its icon +
+    // details, not the full card (see VehicleCard.js's nested-interactive
+    // accessibility fix).
+    const card = page.locator('.group').filter({ hasText: '2020 Honda Civic' });
     await card.hover();
     await page.getByRole('button', { name: 'Delete Honda Civic', exact: true }).click();
 

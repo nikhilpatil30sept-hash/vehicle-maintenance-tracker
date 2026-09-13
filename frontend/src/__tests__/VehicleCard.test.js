@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import VehicleCard from '../components/VehicleCard';
@@ -41,17 +41,21 @@ describe('VehicleCard - display mode', () => {
     expect(onSelect).toHaveBeenCalledWith(VEHICLE);
   });
 
-  it('calls onSelect on Enter and Space, for keyboard users', async () => {
-    const { onSelect } = setup();
-    // The outer card is the only role=button element with aria-pressed set
-    // (Edit/Delete are plain buttons without it), so this targets it
-    // unambiguously instead of matching all three buttons on the card.
+  it('is a real <button> for the select control, so Enter/Space work natively', () => {
+    setup();
+    // The select control used to be a <div role="button" onKeyDown={...}>
+    // that also *contained* the Edit/Delete buttons - a nested-interactive
+    // pattern axe-core flags as a serious WCAG 4.1.2 violation, since
+    // assistive tech can fail to announce interactive descendants of an
+    // interactive element. It's now a real sibling <button>, which gets
+    // Enter/Space activation for free from the browser instead of a
+    // hand-rolled onKeyDown reimplementation - not something jsdom's fake
+    // DOM can faithfully simulate, so we assert the semantics directly.
+    // (aria-pressed is set here but not on Edit/Delete, so this still
+    // targets the select control unambiguously.)
     const card = screen.getByRole('button', { pressed: false });
-    card.focus();
-    fireEvent.keyDown(card, { key: 'Enter' });
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    fireEvent.keyDown(card, { key: ' ' });
-    expect(onSelect).toHaveBeenCalledTimes(2);
+    expect(card.tagName).toBe('BUTTON');
+    expect(card).toHaveAttribute('type', 'button');
   });
 
   it('shows a "No plate" fallback when the vehicle has none', () => {

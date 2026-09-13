@@ -129,9 +129,9 @@ const RecordForm = ({ vehicle, onCreate, onNotify }) => {
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
 
       <div className="flex justify-between items-center mb-6 relative z-10">
-        <h3 className="text-sm font-black text-slate-700 flex items-center gap-2">
+        <h2 className="text-sm font-black text-slate-700 flex items-center gap-2">
           <Wrench size={16} className="text-purple-600" /> Add Service
-        </h3>
+        </h2>
 
         <label className={`cursor-pointer flex items-center gap-2 px-3 py-2 rounded-full transition-all ${analyzing ? 'bg-blue-100 text-blue-600' : 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-600 hover:shadow-lg'}`}>
           {analyzing ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}

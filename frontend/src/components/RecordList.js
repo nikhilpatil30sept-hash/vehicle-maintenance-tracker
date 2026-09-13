@@ -81,10 +81,10 @@ const RecordRow = ({ record, onUpdate, onDelete }) => {
 
 const RecordList = ({ records, loading, onUpdate, onDelete }) => (
   <div className="space-y-3">
-    <h3 className="text-sm font-black text-slate-700 px-2 flex items-center gap-2">
+    <h2 className="text-sm font-black text-slate-700 px-2 flex items-center gap-2">
       <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"></div>
       Service History
-    </h3>
+    </h2>
 
     {loading ? (
       <div className="bg-white/40 backdrop-blur-xl p-10 rounded-3xl text-center border border-white/40">

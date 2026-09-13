@@ -57,32 +57,27 @@ const VehicleCard = ({ vehicle, isSelected, serviceStatus, onSelect, onUpdate, o
 
   return (
     <div
-      onClick={() => onSelect(vehicle)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onSelect(vehicle);
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      aria-pressed={isSelected}
-      className={`bg-white/60 backdrop-blur-xl p-6 rounded-3xl transition-all cursor-pointer relative group shadow-lg hover:shadow-2xl ${
+      className={`bg-white/60 backdrop-blur-xl p-6 rounded-3xl transition-all relative group shadow-lg hover:shadow-2xl ${
         isSelected ? 'border-2 border-purple-400 shadow-2xl scale-105' : 'border border-white/40 hover:border-purple-200'
       }`}
     >
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => onSelect(vehicle)}
+          aria-pressed={isSelected}
+          className="flex items-center gap-4 text-left bg-transparent border-0 p-0 m-0 cursor-pointer"
+        >
           <div className={`p-4 rounded-2xl shadow-lg ${isSelected ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white' : 'bg-gradient-to-br from-slate-100 to-blue-100 text-slate-600'}`}>
             <Car size={24} />
           </div>
           <div>
-            <h4 className="text-xl font-black text-slate-800">{vehicle.year} {vehicle.make} {vehicle.model}</h4>
+            <h3 className="text-xl font-black text-slate-800">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
             <p className="text-xs text-slate-500 font-semibold mt-1">
               {vehicle.license_plate || 'No plate'} • {Number(vehicle.current_mileage || 0).toLocaleString()} miles
             </p>
           </div>
-        </div>
+        </button>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <button type="button" aria-label={`Edit ${vehicle.make} ${vehicle.model}`} onClick={startEditing} className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors">
             <Edit2 size={16} />

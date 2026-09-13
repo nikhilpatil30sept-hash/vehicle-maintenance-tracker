@@ -32,10 +32,10 @@ const VehicleForm = ({ onCreate }) => {
 
   return (
     <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-white/40">
-      <h3 className="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
+      <h2 className="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"></div>
         Register Vehicle
-      </h3>
+      </h2>
       <form className="space-y-3" onSubmit={handleSubmit}>
         <div className="flex gap-3">
           <input
