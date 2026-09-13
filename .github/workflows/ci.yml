@@ -68,6 +68,72 @@ jobs:
         working-directory: backend
         run: ruff check .
 
+  integration-tests:
+    name: Integration tests (critical path)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: carkeeper
+          POSTGRES_PASSWORD: carkeeper
+          POSTGRES_DB: carkeeper_integration
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U carkeeper"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      # Same import-time db.create_all() race as the load-test job - see the
+      # comment on that job's equivalent step.
+      - name: Prepare database schema
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://carkeeper:carkeeper@localhost:5432/carkeeper_integration
+          SECRET_KEY: integration-test-secret-key
+          GEMINI_API_KEY: integration-test-fake-key
+          FLASK_ENV: production
+        run: python -c "import app"
+
+      - name: Start backend (gunicorn)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://carkeeper:carkeeper@localhost:5432/carkeeper_integration
+          SECRET_KEY: integration-test-secret-key
+          GEMINI_API_KEY: integration-test-fake-key
+          FLASK_ENV: production
+        run: |
+          gunicorn -w 2 -b 0.0.0.0:5001 app:app &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:5001/health -o /dev/null && break
+            sleep 1
+          done
+
+      # No route mocking, no test_client - real HTTP calls against the real
+      # WSGI server above and a real Postgres database. See
+      # backend/tests_integration/README.md.
+      - name: Run integration tests
+        working-directory: backend
+        env:
+          BASE_URL: http://127.0.0.1:5001
+        run: python -m pytest tests_integration/ -v --no-cov
+
   frontend-unit-tests:
     name: Frontend unit tests (Jest)
     runs-on: ubuntu-latest
