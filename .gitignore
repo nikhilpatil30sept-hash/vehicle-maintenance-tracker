@@ -19,3 +19,6 @@ playwright/.cache/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Jest coverage output
+coverage/
