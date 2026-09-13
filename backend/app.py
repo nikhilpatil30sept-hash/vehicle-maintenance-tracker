@@ -489,4 +489,7 @@ def ocr_receipt():
 
 if __name__ == '__main__':
     # Local dev default avoids port 5000, which macOS AirPlay Receiver occupies by default.
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))
+    # Binding 0.0.0.0 is intentional here (e.g. testing from another device on the
+    # same LAN, matching how the production gunicorn command also binds 0.0.0.0) -
+    # not a mistaken default, so it's silenced rather than "fixed" to 127.0.0.1.
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))  # nosec B104

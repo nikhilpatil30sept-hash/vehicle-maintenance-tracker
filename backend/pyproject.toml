@@ -20,3 +20,9 @@ select = [
     "C4",  # comprehension simplifications
     "SIM", # general simplifications
 ]
+
+[tool.bandit]
+# Excludes mirror Ruff's above: dev-only virtualenv, plus the test suites,
+# which use patterns (like hardcoded test passwords and fake tokens) that
+# would otherwise show up as false-positive hardcoded-secret findings.
+exclude_dirs = ["venv", "tests", "tests_integration", "loadtest"]
