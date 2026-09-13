@@ -1,0 +1,46 @@
+# CodeQL static analysis, separate from ci.yml (a Bandit/Ruff/pytest/Jest/
+# Playwright pipeline) because CodeQL's "analyze" action needs its own
+# build/init/autobuild steps and reports through GitHub's code scanning UI
+# rather than a pass/fail job in the main pipeline.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, independent of any push - catches newly-published CodeQL
+    # query findings against code that hasn't changed recently.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # javascript-typescript covers the CRA frontend; python covers the
+        # Flask backend. Neither needs a real build - both are analyzed
+        # from source.
+        language: [javascript-typescript, python]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

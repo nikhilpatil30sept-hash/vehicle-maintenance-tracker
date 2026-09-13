@@ -228,22 +228,62 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
 
       # Every spec under e2e/ stubs its network calls with page.route (see
       # e2e/helpers.js), so this job never talks to a real backend or
       # database. playwright.config.js's webServer block boots the React dev
       # server itself and waits for it - no separate start/wait-on step
-      # needed.
+      # needed. Cross-browser: chromium, firefox and webkit each run the
+      # full suite - visual.spec.js is excluded from all three (testIgnore
+      # in playwright.config.js) and runs only in the visual-regression job
+      # below, since a screenshot baseline is tied to one specific engine.
       - name: Run Playwright tests
         working-directory: frontend
-        run: npx playwright test
+        run: npx playwright test --project=chromium --project=firefox --project=webkit
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
+          path: frontend/playwright-report/
+
+  visual-regression:
+    name: Visual regression (Playwright screenshots)
+    runs-on: ubuntu-latest
+    # No baseline images are committed yet - see
+    # frontend/e2e/VISUAL_REGRESSION.md for the one-time generation step.
+    # Until that's done this job always fails on "no baseline found", so it
+    # is informational (continue-on-error) rather than blocking; remove this
+    # line once frontend/e2e/visual.spec.js-snapshots/ is committed.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual regression tests
+        working-directory: frontend
+        run: npx playwright test --project=visual
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
           path: frontend/playwright-report/
           retention-days: 14
 

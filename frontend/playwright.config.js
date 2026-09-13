@@ -19,8 +19,17 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
   },
 
+  // visual.spec.js gets its own project (chromium only - a screenshot
+  // baseline is tied to one specific rendering engine, so comparing it
+  // against Firefox/WebKit renders would just be permanent false failures)
+  // and is excluded from the three cross-browser projects below via
+  // testIgnore. The `visual-regression` CI job runs --project=visual on its
+  // own; `e2e-tests` runs the other three and never touches it.
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', testIgnore: /visual\.spec\.js/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', testIgnore: /visual\.spec\.js/, use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', testIgnore: /visual\.spec\.js/, use: { ...devices['Desktop Safari'] } },
+    { name: 'visual', testMatch: /visual\.spec\.js/, use: { ...devices['Desktop Chrome'] } },
   ],
 
   // Boots the CRA dev server itself and waits for it to answer before any
