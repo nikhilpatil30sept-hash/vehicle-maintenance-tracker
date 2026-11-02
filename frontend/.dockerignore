@@ -1,0 +1,11 @@
+# Installed fresh inside the image with npm ci; a host copy (built for macOS)
+# would be wrong for Linux and slow to send to the Docker daemon.
+node_modules/
+build/
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+.env
+Dockerfile
+.dockerignore

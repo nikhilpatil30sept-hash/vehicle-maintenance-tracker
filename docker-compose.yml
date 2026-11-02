@@ -1,0 +1,109 @@
+# CarKeeper in containers: PostgreSQL, the Flask API and the React site,
+# plus the test suites as one-off containers. See docs/DOCKER.md.
+#
+#   docker compose up --build                        app at http://localhost:3000
+#   docker compose run --rm backend-unit-tests       pytest (SQLite, no services)
+#   docker compose run --rm integration-tests        real HTTP against api + Postgres
+#   docker compose run --rm frontend-unit-tests      Jest
+#   docker compose run --rm e2e-tests                Playwright, 3 browsers
+#   docker compose down -v                           stop and delete the database volume
+
+name: carkeeper
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: carkeeper
+      POSTGRES_PASSWORD: carkeeper
+      POSTGRES_DB: carkeeper
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U carkeeper -d carkeeper"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      target: runtime
+    image: carkeeper-api
+    environment:
+      # "db" is the Postgres service's name on the Compose network.
+      DATABASE_URL: postgresql://carkeeper:carkeeper@db:5432/carkeeper
+      # Local-only defaults. Set real values in your shell or a root .env file.
+      SECRET_KEY: ${SECRET_KEY:-local-docker-secret-change-me}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      target: web
+      args:
+        # Called from your browser on the host, so it's the published port.
+        REACT_APP_API_BASE: http://localhost:5001
+    image: carkeeper-web
+    ports:
+      # 3000 on the host keeps the origin the API's CORS list already allows.
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ---- test containers: only run when named, e.g. `docker compose run --rm <name>`
+
+  backend-unit-tests:
+    profiles: [test]
+    build:
+      context: ./backend
+      target: test
+    image: carkeeper-api-test
+    command: ["pytest"]
+
+  integration-tests:
+    profiles: [test]
+    build:
+      context: ./backend
+      target: test
+    image: carkeeper-api-test
+    environment:
+      BASE_URL: http://api:5001
+    command: ["python", "-m", "pytest", "tests_integration/", "-v", "--no-cov"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  frontend-unit-tests:
+    profiles: [test]
+    build:
+      context: ./frontend
+      target: deps
+    image: carkeeper-web-deps
+    environment:
+      CI: "true"
+    command: ["npx", "react-scripts", "test", "--watchAll=false"]
+
+  e2e-tests:
+    profiles: [e2e]
+    build:
+      context: ./frontend
+      target: e2e
+    image: carkeeper-e2e
+    ipc: host
+    init: true
+    environment:
+      # Write the HTML report outside the app folder, into a mounted directory,
+      # so it survives after the container is removed.
+      PLAYWRIGHT_HTML_OUTPUT_DIR: /reports/html
+    volumes:
+      - ./frontend/playwright-report:/reports
+
+volumes:
+  pgdata:

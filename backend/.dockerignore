@@ -1,0 +1,14 @@
+# Keep local environments, secrets and test output out of the image.
+venv/
+.venv/
+env/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+instance/
+Dockerfile
+.dockerignore
