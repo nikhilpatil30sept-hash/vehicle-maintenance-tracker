@@ -23,7 +23,7 @@
 
     <junit.version>5.11.4</junit.version>
     <rest-assured.version>5.5.0</rest-assured.version>
-    <jackson.version>2.18.2</jackson.version>
+    <jackson.version>2.18.11</jackson.version>
 
     <!-- Where the API is, and the SECRET_KEY it signs tokens with. The defaults
          match docker-compose.yml; override with -DbaseUrl=... -DjwtSecret=... -->
