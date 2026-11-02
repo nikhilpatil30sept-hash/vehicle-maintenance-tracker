@@ -4,6 +4,9 @@
 # line today is 99 chars at the default 88-char limit, which flags ~100
 # lines that aren't actually a readability problem).
 line-length = 110
+# Match the Python version CI runs on, so newer Ruff releases (which assume a
+# newer Python by default) don't suggest syntax that 3.10 doesn't have.
+target-version = "py310"
 extend-exclude = ["venv", "migrations"]
 
 [tool.ruff.lint]

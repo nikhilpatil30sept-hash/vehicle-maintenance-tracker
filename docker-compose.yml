@@ -32,7 +32,9 @@ services:
     image: carkeeper-api
     environment:
       # "db" is the Postgres service's name on the Compose network.
-      DATABASE_URL: postgresql://carkeeper:carkeeper@db:5432/carkeeper
+      # +psycopg2 names the driver: SQLAlchemy 2.1 made psycopg 3 the default
+      # for plain postgresql:// URLs, and this app installs psycopg2.
+      DATABASE_URL: postgresql+psycopg2://carkeeper:carkeeper@db:5432/carkeeper
       # Local-only defaults. Set real values in your shell or a root .env file.
       SECRET_KEY: ${SECRET_KEY:-local-docker-secret-change-me}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

@@ -58,8 +58,13 @@ CORS(app, resources={r"/*": {
 }})
 
 database_url = os.environ.get('DATABASE_URL', '')
-if database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+# Name the driver explicitly. Render/Heroku-style URLs use "postgres://", which
+# SQLAlchemy rejects, and SQLAlchemy 2.1 made psycopg 3 the default driver for
+# plain "postgresql://" URLs, while this app installs psycopg2.
+for prefix in ('postgres://', 'postgresql://'):
+    if database_url.startswith(prefix):
+        database_url = 'postgresql+psycopg2://' + database_url[len(prefix):]
+        break
 
 # Fail with an actionable message rather than a KeyError or an opaque SQLAlchemy error.
 if not database_url:
