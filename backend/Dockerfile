@@ -11,16 +11,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-WORKDIR /app
+# The folder keeps the repo's name, "backend". Calling it /app breaks the tests:
+# backend/ has an __init__.py, so a folder named app is itself an importable
+# package "app", and pytest then imports it instead of app.py.
+WORKDIR /srv/backend
 
 # Dependencies first, code second: editing app.py then reuses this cached layer
 # instead of reinstalling every package on each build.
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Never run the app as root inside the container. /app itself is made writable
+# Never run the app as root inside the container. The app folder is made writable
 # too, so pytest can write its cache and coverage file in the test target.
-RUN useradd --create-home --uid 10001 appuser && chown appuser:appuser /app
+RUN useradd --create-home --uid 10001 appuser && chown appuser:appuser /srv/backend
 COPY --chown=appuser:appuser . .
 USER 10001
 
