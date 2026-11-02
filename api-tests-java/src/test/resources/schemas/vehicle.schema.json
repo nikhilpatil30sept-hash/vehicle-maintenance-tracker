@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Vehicle",
+  "description": "A vehicle as POST/PUT /vehicles and GET /vehicles return it (Vehicle.to_dict).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "make", "model", "year", "license_plate", "current_mileage"],
+  "properties": {
+    "id": { "type": "integer", "minimum": 1 },
+    "make": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "model": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "year": { "type": "integer", "minimum": 1885 },
+    "license_plate": { "type": ["string", "null"], "maxLength": 20 },
+    "current_mileage": { "type": "integer", "minimum": 0, "maximum": 10000000 }
+  }
+}

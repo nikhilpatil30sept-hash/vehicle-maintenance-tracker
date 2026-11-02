@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CarKeeper API tests in Java: JUnit 5 + REST Assured, run against a live API
+  (the Docker Compose stack in CI). See README.md.
+
+    mvn test                                    # API on http://localhost:5001
+    mvn test -DbaseUrl=http://api:5001          # inside Docker Compose
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.carkeeper</groupId>
+  <artifactId>carkeeper-api-tests</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+  <name>CarKeeper API tests (Java)</name>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <junit.version>5.11.4</junit.version>
+    <rest-assured.version>5.5.0</rest-assured.version>
+    <jackson.version>2.18.2</jackson.version>
+
+    <!-- Where the API is, and the SECRET_KEY it signs tokens with. The defaults
+         match docker-compose.yml; override with -DbaseUrl=... -DjwtSecret=... -->
+    <baseUrl>http://localhost:5001</baseUrl>
+    <jwtSecret>local-docker-secret-change-me</jwtSecret>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>${rest-assured.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${rest-assured.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Lets REST Assured serialize Map request bodies to JSON. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <systemPropertyVariables>
+            <baseUrl>${baseUrl}</baseUrl>
+            <jwtSecret>${jwtSecret}</jwtSecret>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

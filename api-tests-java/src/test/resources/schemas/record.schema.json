@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Service record",
+  "description": "A service record as POST/PUT /records and GET /records return it (Record.to_dict).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "date", "task", "cost", "mileage", "category", "receipt_fingerprint"],
+  "properties": {
+    "id": { "type": "integer", "minimum": 1 },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "task": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "cost": { "type": ["number", "null"], "minimum": 0 },
+    "mileage": { "type": "integer", "minimum": 0, "maximum": 10000000 },
+    "category": { "type": ["string", "null"], "maxLength": 80 },
+    "receipt_fingerprint": { "type": ["string", "null"] }
+  }
+}

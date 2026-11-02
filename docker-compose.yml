@@ -6,6 +6,7 @@
 #   docker compose run --rm integration-tests        real HTTP against api + Postgres
 #   docker compose run --rm frontend-unit-tests      Jest
 #   docker compose run --rm e2e-tests                Playwright, 3 browsers
+#   docker compose run --rm java-api-tests           JUnit 5 + REST Assured against api + Postgres
 #   docker compose down -v                           stop and delete the database volume
 
 name: carkeeper
@@ -107,5 +108,26 @@ services:
     volumes:
       - ./frontend/playwright-report:/reports
 
+  java-api-tests:
+    profiles: [test]
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /tests
+    volumes:
+      - ./api-tests-java:/tests
+      # Downloaded dependencies survive between runs.
+      - maven-repo:/root/.m2
+    command:
+      - mvn
+      - -B
+      - -ntp
+      - test
+      - -DbaseUrl=http://api:5001
+      # Same secret as the api service, so the suite can sign its own test tokens.
+      - -DjwtSecret=${SECRET_KEY:-local-docker-secret-change-me}
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  maven-repo:

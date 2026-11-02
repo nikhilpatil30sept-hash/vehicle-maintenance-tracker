@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models.models import Record, User, Vehicle, db
@@ -114,6 +115,13 @@ def handle_validation_error(err):
 @app.errorhandler(413)
 def handle_too_large(_err):
     return jsonify({"error": "Upload is too large"}), 413
+
+
+@app.errorhandler(HTTPException)
+def handle_http_error(err):
+    # Keep Flask's own HTTP errors (404 unknown route, 405 wrong method, ...) as
+    # they are; without this, the catch-all handler below turns them into a 500.
+    return jsonify({"error": err.name}), err.code
 
 
 @app.errorhandler(SQLAlchemyError)
